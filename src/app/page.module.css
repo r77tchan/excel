@@ -8,12 +8,14 @@
   display: block;
   border-collapse: collapse;
   border: 1px solid red;
+  white-space: nowrap;
 }
 .table > tbody > tr > th,
 .table > tbody > tr > td {
   border: 1px solid black;
   padding: 1em;
   min-width: 100px;
+  height: 4em;
 }
 .table > tbody > tr > th {
   background: #efefef;
@@ -38,4 +40,16 @@
 
 .selected {
   background: lightgreen;
+}
+
+.input {
+  display: block;
+  width: 100%;
+  outline: none;
+  border: none;
+  background: lightgreen;
+  font: inherit;
+  padding: 0;
+  margin: 0;
+  box-shadow: none;
 }
