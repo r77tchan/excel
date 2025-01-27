@@ -1,95 +1,71 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client'
+
+import { useState, useEffect } from 'react'
+import styles from './page.module.css'
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const rows = Array.from({ length: 100 }, (_, rowIndex) => rowIndex)
+  const cols = Array.from({ length: 100 }, (_, colIndex) => colIndex)
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+  // 選択されたセルと文字入力を管理
+  const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null)
+  const [cellValues, setCellValues] = useState<Record<string, string>>({})
+
+  const handleCellClick = (rowIndex: number, colIndex: number) => {
+    setSelectedCell({ row: rowIndex, col: colIndex })
+  }
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (!selectedCell) return // セルが選択されていない場合は何もしない
+
+    const key = e.key
+    if (key.length === 1 || key === 'Backspace') {
+      const cellKey = `${selectedCell.row}-${selectedCell.col}`
+
+      setCellValues((prev) => {
+        const updated = { ...prev }
+        if (key === 'Backspace') {
+          updated[cellKey] = updated[cellKey]?.slice(0, -1) || '' // バックスペースで1文字削除
+        } else {
+          updated[cellKey] = (updated[cellKey] || '') + key // キー入力を追加
+        }
+        return updated
+      })
+    }
+  }
+
+  useEffect(() => {
+    // キーボードイベントを設定
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [selectedCell])
+
+  return (
+    <div className={styles.main}>
+      <h1 className={styles.title}>Excelライクの動作をjavascriptで実現</h1>
+      <table className={styles.table}>
+        <tbody>
+          {rows.map((rowIndex) => (
+            <tr key={rowIndex}>
+              {cols.map((colIndex) =>
+                colIndex === 0 || rowIndex === 0 ? (
+                  <th key={`${rowIndex}-${colIndex}`}>{rowIndex === 0 ? colIndex : rowIndex}</th>
+                ) : (
+                  <td
+                    key={`${rowIndex}-${colIndex}`}
+                    className={selectedCell?.row === rowIndex && selectedCell?.col === colIndex ? styles.selected : ''}
+                    onClick={() => handleCellClick(rowIndex, colIndex)}
+                  >
+                    {cellValues[`${rowIndex}-${colIndex}`] || ''}
+                  </td>
+                )
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
-  );
+  )
 }
