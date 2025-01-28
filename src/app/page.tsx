@@ -153,19 +153,31 @@ export default function Home() {
       </table>
       <br />
       <p>操作</p>
-      <p>クリック → 選択状態へ</p>
-      <p>ダブルクリック → 編集状態へ</p>
+      <p>
+        クリック → <span className={styles.selected}>選択状態へ</span>
+      </p>
+      <p>
+        ダブルクリック → <span className={styles.editing}>編集状態へ</span>
+      </p>
       <br />
-      <p>選択中</p>
-      <p>任意のキー → 編集状態へ</p>
-      <p>十字キー → 移動</p>
-      <p>ctrl + c → 全コピー</p>
-      <p>ctrl + v → 上書き貼り付け</p>
+      <div className={styles.selected}>
+        <p>選択中</p>
+        <p>
+          任意のキー → <span style={{ background: 'lightcyan' }}>編集状態へ</span>
+        </p>
+        <p>十字キー → 移動</p>
+        <p>ctrl + c → 全コピー</p>
+        <p>ctrl + v → 上書き貼り付け</p>
+      </div>
       <br />
-      <p>編集中</p>
-      <p>Enterキー → 選択状態へ</p>
-      <p>十字キー → デフォルトカーソル移動</p>
-      <p>ctrl + cなど → デフォルト挙動</p>
+      <div className={styles.editing}>
+        <p>編集中</p>
+        <p>
+          Enterキー → <span style={{ background: 'lightgreen' }}>選択状態へ</span>
+        </p>
+        <p>十字キー → デフォルトカーソル移動</p>
+        <p>ctrl + cなど → デフォルト挙動</p>
+      </div>
       <br />
     </div>
   )
