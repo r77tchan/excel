@@ -36,33 +36,65 @@ export default function Home() {
   const handleKeyDown = (e: KeyboardEvent) => {
     if (!selectedCell) return // セルが選択されていない場合は何もしない
 
-    if (e.metaKey || e.ctrlKey) {
-      if (e.key === 'v') {
-        e.preventDefault()
+    // 編集モードじゃない時、ctrlなどは除く
+    const isPrintableKey = e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey
+    if (!editingCell && (isPrintableKey || e.key === 'Backspace' || e.key === 'Enter')) {
+      setEditingCell(selectedCell) // 編集モードへ
+      e.preventDefault()
+      //const cellKey = `${selectedCell.row}-${selectedCell.col}`
+      //setCellValues((prev) => ({ ...prev, [cellKey]: '' })) // 上書き
+    }
 
-        // 編集モード中の場合
-        if (editingCell) {
-          navigator.clipboard.readText().then((pastedValue) => {
-            const cellKey = `${editingCell.row}-${editingCell.col}`
-            setCellValues((prev) => ({ ...prev, [cellKey]: (prev[cellKey] || '') + pastedValue })) // 既存の文字列に追加
-          })
-        }
-        // 選択モード中の場合
-        else if (selectedCell) {
-          navigator.clipboard.readText().then((pastedValue) => {
-            const cellKey = `${selectedCell.row}-${selectedCell.col}`
-            setCellValues((prev) => ({ ...prev, [cellKey]: pastedValue })) // クリップボードの内容で上書き
-          })
-        }
+    if ((e.metaKey || e.ctrlKey) && !editingCell) {
+      e.preventDefault()
+      if (e.key === 'v') {
+        navigator.clipboard.readText().then((pastedValue) => {
+          const cellKey = `${selectedCell.row}-${selectedCell.col}`
+          setCellValues((prev) => ({ ...prev, [cellKey]: pastedValue })) // クリップボードの内容で上書き
+        })
       }
       if (e.key === 'c') {
-        e.preventDefault()
         const cellKey = `${selectedCell.row}-${selectedCell.col}`
         const valueToCopy = cellValues[cellKey] || ''
         navigator.clipboard.writeText(valueToCopy)
       }
     }
+
+    // エンターキー
+    if (e.key === 'Enter') {
+      if (editingCell) {
+        setEditingCell(null)
+      }
+    }
+
+    // 十字キー
+    if (!editingCell) {
+      switch (e.key) {
+        case 'ArrowUp':
+          setSelectedCell((prev) => (prev ? { row: Math.max(prev.row - 1, 1), col: prev.col } : null))
+          e.preventDefault()
+          break
+        case 'ArrowDown':
+          setSelectedCell((prev) => (prev ? { row: Math.min(prev.row + 1, rows.length - 1), col: prev.col } : null))
+          e.preventDefault()
+          break
+        case 'ArrowLeft':
+          setSelectedCell((prev) => (prev ? { row: prev.row, col: Math.max(prev.col - 1, 1) } : null))
+          e.preventDefault()
+          break
+        case 'ArrowRight':
+          setSelectedCell((prev) => (prev ? { row: prev.row, col: Math.min(prev.col + 1, cols.length - 1) } : null))
+          e.preventDefault()
+          break
+      }
+    }
   }
+
+  useEffect(() => {
+    if (editingCell) {
+      // console.log('編集モードが有効になりました：', editingCell)
+    }
+  }, [editingCell])
 
   // キーボードイベントの設定
   useEffect(() => {
@@ -70,7 +102,7 @@ export default function Home() {
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [selectedCell, cellValues])
+  }, [selectedCell, cellValues, editingCell])
 
   return (
     <div className={styles.main}>
@@ -85,7 +117,9 @@ export default function Home() {
                 ) : (
                   <td
                     key={`${rowIndex}-${colIndex}`}
-                    className={selectedCell?.row === rowIndex && selectedCell?.col === colIndex ? styles.selected : ''}
+                    className={`${
+                      selectedCell?.row === rowIndex && selectedCell?.col === colIndex ? styles.selected : ''
+                    } ${editingCell?.row === rowIndex && editingCell?.col === colIndex ? styles.editing : ''}`}
                     onClick={() => handleCellClick(rowIndex, colIndex)}
                     onDoubleClick={() => handleCellDoubleClick(rowIndex, colIndex)}
                   >
@@ -94,6 +128,7 @@ export default function Home() {
                         className={styles.input}
                         type="text"
                         value={cellValues[`${rowIndex}-${colIndex}`] || ''}
+                        size={Math.max(cellValues[`${rowIndex}-${colIndex}`]?.length * 2 || 1, 1)}
                         onChange={handleInputChange}
                         autoFocus
                         onBlur={(e) => {
@@ -116,6 +151,22 @@ export default function Home() {
           ))}
         </tbody>
       </table>
+      <br />
+      <p>操作</p>
+      <p>クリック → 選択状態へ</p>
+      <p>ダブルクリック → 編集状態へ</p>
+      <br />
+      <p>選択中</p>
+      <p>任意のキー → 編集状態へ</p>
+      <p>十字キー → 移動</p>
+      <p>ctrl + c → 全コピー</p>
+      <p>ctrl + v → 上書き貼り付け</p>
+      <br />
+      <p>編集中</p>
+      <p>Enterキー → 選択状態へ</p>
+      <p>十字キー → デフォルトカーソル移動</p>
+      <p>ctrl + cなど → デフォルト挙動</p>
+      <br />
     </div>
   )
 }

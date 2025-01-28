@@ -16,6 +16,7 @@
   padding: 1em;
   min-width: 100px;
   height: 4em;
+  width: auto;
 }
 .table > tbody > tr > th {
   background: #efefef;
@@ -41,13 +42,17 @@
 .selected {
   background: lightgreen;
 }
+.editing {
+  background: lightcyan;
+}
 
 .input {
   display: block;
   width: 100%;
+  width: auto;
   outline: none;
   border: none;
-  background: lightgreen;
+  background: lightcyan;
   font: inherit;
   padding: 0;
   margin: 0;
